@@ -1,0 +1,1560 @@
+---
+title: "Trabajo practico"
+author: "Jonnathan Campoberde"
+format: 
+  html:
+    code-fold: true
+    embed-resources: true
+execute: 
+  warning: false
+  message: false
+  echo: false
+editor: visual
+---
+
+## Introducción
+
+Aceptando el reto #30DayChartChallenge con las categorias:\
+1. Comparación\
+2. Distribución\
+3. Relaciones\
+4. Series de tiempo\
+5. Incertidumbres
+
+## Categoria: Comparación
+
+### Día 1: Part-of-whole
+
+```{r, echo=FALSE, fig.cap="Causa de fallecimientos en Ecuador", fig.align='center'}
+knitr::include_url("https://datawrapper.dwcdn.net/ysNl7/1/",height = "750px")
+```
+
+**Audiencia**: A las insituciones de salud publica les permite tomar decisiones en el ámbito sanitario para identificar las áreas donde es necesario concentrar esfuerzos preventivos, como campañas de vacunación o promoción de estilos de vida saludables, y ajustar recursos para tratar las principales causas de defunción.
+
+**Objetivo**: Indentificar las principales causas de fallecimiento en Ecuador en el año 2023.
+
+**Visualización**: Se utiliza la herramienta datawrapper para realizar un grafico de anillos en el día `Part-of-whole`.
+
+**Conjunto de datos**: Los datos son obtenidos del Instituto Nacional de Estadísticas y Censos de Ecuador [INEC](https://aplicaciones3.ecuadorencifras.gob.ec/BIINEC-war/index.xhtml), la misma que es la institución rectora de la estadística nacional de Ecuador. A partir de estos datos se agrupan y cuentan para encontrar las causas de fallecimiento que más se repiten.
+
+### Día 2: Neo
+
+```{r}
+# Instalar paquetes 
+if (!require(ggplot2)) install.packages("ggplot2")
+if (!require(ggmosaic)) install.packages("ggmosaic")
+if (!require(readxl)) install.packages("readxl")
+if (!require(showtext)) install.packages("showtext")
+if (!require(ggiraph)) install.packages("ggiraph")
+if (!require(dplyr)) install.packages("dplyr")
+if (!require(networkD3)) install.packages("networkD3")
+if (!require(waffle)) install.packages("waffle")
+if (!require(extrafont)) install.packages("extrafont")
+if (!require(tidyverse)) install.packages("tidyverse")
+if (!require(stringr)) install.packages("stringr")
+if (!require(plotly)) install.packages("plotly")
+if (!require(ggimage)) install.packages("ggimage")
+if (!require(rsvg)) install.packages("rsvg")
+if (!require(grid)) install.packages("grid")
+if (!require(snakecase)) install.packages("snakecase")
+if (!require(camcorder)) install.packages("camcorder")
+if (!require(glue)) install.packages("glue")
+if (!require(remotes)) install.packages("remotes")
+if (!require(ggchicklet)) remotes::install_github("hrbrmstr/ggchicklet")
+if (!require(cropcircles)) install.packages("cropcircles")
+if (!require(stringi)) install.packages("stringi")
+if (!require(testthat)) install.packages("testthat")
+if (!require(hrbrthemes)) install.packages("hrbrthemes")
+if (!require(magick)) install.packages("magick")
+if (!require(sf)) install.packages("sf")
+if (!require(rnaturalearth)) install.packages("rnaturalearth")
+if (!require(rnaturalearthdata)) install.packages("rnaturalearthdata")
+if (!require(igraph)) install.packages("igraph")
+if (!require(janitor)) install.packages("janitor")
+
+
+#Cargar las librerias
+library(ggplot2)
+library(ggmosaic)
+library(dplyr)
+library(showtext)
+library(ggiraph)
+library(networkD3)
+library(htmltools)
+library(waffle)
+library(extrafont)
+library(tidyverse)
+library(stringr)
+library(plotly)
+library(ggimage)
+library(rsvg)
+library(grid) 
+library(snakecase)
+library(camcorder)
+library(glue)
+library(ggchicklet)
+library(cropcircles)
+library(stringi)
+library(testthat)
+library(hrbrthemes)
+library(magick)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(igraph)
+library(janitor)
+```
+
+```{r}
+# Read the Excel file
+data <- read_excel("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_one/second_chart.xlsx")
+
+data$mes_insc <- factor(data$mes_insc, 
+                 levels = c("Enero", "Febrero", "Marzo", "Abril", 
+                            "Mayo", "Junio", "Julio", "Agosto", 
+                            "Septiembre", "Octubre", "Noviembre", "Diciembre"),
+                 ordered = TRUE)
+
+font_add_google(name = "Roboto", family = "Roboto")
+showtext_auto()
+ggplot(data = data) +
+  geom_mosaic(aes(x = product(sexo, mes_insc), fill = sexo,weight = frecuencia), 
+              divider = mosaic("h"),color = "black",size = 0.1) +
+  scale_fill_manual(values = c("#00D8FF", "#FF6B6B")) +
+  labs(title = "Fallecimiento por genero en Ecuador",
+       subtitle = "Distribución de fallecimientos en Ecuador en el año 2023, realizando un analisis comparativo de la\nmortalidad por mes y sexo para identificar tendencias.",
+       caption = "Créditos: Jonnathan Campoberde  Fuente: INEC",
+       x = "Mes del Fallecimiento",
+       y = "Proporción",
+       fill = "Sexo") +
+  theme_minimal() +
+   theme(
+    # Fondo oscuro y texto en color claro
+    plot.background = element_rect(fill = "#1C1C1C"),
+    panel.background = element_rect(fill = "#1C1C1C"),
+    plot.title = element_text(family = "Roboto", color = "#F5F5F5", size = 18, face = "bold",hjust = 0.5),
+    plot.subtitle = element_text(family = "Roboto", color = "#F5F5F5", size = 12 ),
+    plot.caption = element_text(family = "Roboto", color = "#F5F5F5", size = 8,hjust = -0.1),
+    axis.title.x = element_text(family = "Roboto", color = "#F5F5F5",size = 14),
+    axis.title.y = element_text(family = "Roboto", color = "#F5F5F5",size = 14),
+    axis.text = element_text(family = "Roboto", color = "#F5F5F5"),
+    legend.background = element_rect(fill = "#1C1C1C"),
+    legend.text = element_text(family = "Roboto", color = "#F5F5F5"),
+    legend.title = element_text(family = "Roboto", color = "#F5F5F5"),
+    axis.text.x = element_text(angle = 90, hjust = 1)  # Rotar etiquetas de mes
+  )
+```
+
+**Audiencia**: Dirigido al Departamento de justicia y a todos los interesados en analizar las estadísticas de fallecimientos desglosadas por sexo. Esta información es crucial para la formulación de políticas, la asignación de recursos y la implementación de estrategias que aborden las necesidades de salud pública y la prevención de muertes.
+
+**Objetivo**: Identificación de tendencias a lo largo del tiempo, permitiendo observar tanto los aumentos como las disminuciones en la cantidad de fallecimientos.
+
+**Visualización**: Se utiliza ggplot para realizar el gráfico junto con el lenguaje de programación R para realizar el grafico en el día `Neo`.
+
+**Conjunto de datos**: Los datos son obtenidos del Instituto Nacional de Estadísticas y Censos de Ecuador [INEC](https://aplicaciones3.ecuadorencifras.gob.ec/BIINEC-war/index.xhtml), la misma que es la institución rectora de la estadística nacional de Ecuador. A partir de estos datos se agrupan por sexo y mes para contar las repeticiones y encontrar las causas de fallecimiento que más se repiten.
+
+### Día 3: Makeover
+
+```{r}
+# Read the Excel file
+data_graphic <- read_excel("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_one/three_chart.xlsx")
+
+```
+
+```{r}
+# Filtrar las 6 provincias con más registros
+top_provinces <- data_graphic %>%
+  group_by(prov_fall) %>%
+  summarise(Freq = n(), .groups = 'drop') %>%
+  arrange(desc(Freq)) %>%
+  slice_head(n = 5) %>%
+  pull(prov_fall)
+
+# Filtrar el dataframe original para incluir solo las 6 provincias seleccionadas
+data_filtered <- data_graphic %>%
+  filter(prov_fall %in% top_provinces)
+
+# Filtrar los 4 niveles más importantes para niv_inst
+top_niv_inst <- data_filtered %>%
+  group_by(niv_inst) %>%
+  summarise(Freq = n(), .groups = 'drop') %>%
+  arrange(desc(Freq)) %>%
+  slice_head(n = 4) %>%
+  pull(niv_inst)
+
+# Filtrar los 4 niveles más importantes para etnia
+top_etnia <- data_filtered %>%
+  group_by(etnia) %>%
+  summarise(Freq = n(), .groups = 'drop') %>%
+  arrange(desc(Freq)) %>%
+  slice_head(n = 4) %>%
+  pull(etnia)
+
+# Filtrar el dataframe para incluir solo los 5 niveles seleccionados
+data_final <- data_filtered %>%
+  filter(niv_inst %in% top_niv_inst & etnia %in% top_etnia)
+
+# Crear un dataframe que cuenta las ocurrencias de cada combinación de variables
+data_counts <- data_final %>%
+  group_by(prov_fall, niv_inst, etnia) %>%
+  summarise(Freq = n(), .groups = 'drop')
+
+# Crear los nodos (unique values)
+nodes <- data.frame(name = unique(c(as.character(data_counts$prov_fall), 
+                                     as.character(data_counts$niv_inst), 
+                                     as.character(data_counts$etnia))))
+
+# Crear los enlaces, asignando índices a los nodos
+data_counts$linkSource <- match(data_counts$prov_fall, nodes$name) - 1
+data_counts$linkTarget <- match(data_counts$niv_inst, nodes$name) - 1
+data_counts$linkTarget2 <- match(data_counts$etnia, nodes$name) - 1
+
+# Enlaces desde 'prov_fall' a 'niv_inst'
+links1 <- data_counts %>% select(source = linkSource, target = linkTarget, value = Freq)
+
+# Enlaces desde 'niv_inst' a 'etnia'
+links2 <- data_counts %>% select(source = linkTarget, target = linkTarget2, value = Freq)
+
+links <- rbind(links1, links2)
+
+max_value <- max(links$value) 
+links$value <- links$value / max_value * 10 
+
+# Crear el gráfico de Sankey con dimensiones ajustadas
+sankey <- sankeyNetwork(Links = links, Nodes = nodes, Source = "source", 
+                         Target = "target", Value = "value", 
+                         NodeID = "name", fontSize = 12,  # Tamaño de fuente ajustado
+                         nodeWidth = 30, 
+                         colourScale = JS("d3.scaleOrdinal(['#2c3e50', '#2980b9', '#e74c3c', '#8e44ad', '#f39c12', '#27ae60'])"),
+                         width = 1200,   # Ancho del gráfico
+                         height = 800)   # Alto del gráfico
+
+style_container <- "border: 1px solid #ccc; border-radius: 5px; padding: 20px; background-color: #f9f9f9;"
+
+
+title <- htmltools::tags$h3("Defunciones por Provincia, Nivel de Educación y Etnia", 
+                             style = "text-align: center;")
+description <- htmltools::tags$p("Este gráfico de Sankey ilustra las interacciones entre las provincias, los niveles de educación y las etnias en el Ecuador en el año 2023. Se han seleccionado las provincias y categorías más representativas para una mejor visualización.")
+
+caption <- htmltools::tags$footer("Créditos: Jonnathan Campoberde  Fuente: INEC", 
+                                   style = "text-align: rigth;font-size: 11px;")
+
+container <- htmltools::tags$div(
+  style = style_container,  
+  sankey
+)
+
+
+browsable(tagList(title, description, container, caption))
+```
+
+**Audiencia**: Dirigido al Departamento de justicia y a todos los interesados en analizar las estadísticas de fallecimientos que sucede en las provincias con mayor defunciones buscando conociendo la relación entre el nivel de educación y su etnia. Esta información es importante para conocer las provincias que mayor defunciones tiene junto con el nivel educativo y su etnia.
+
+**Objetivo**: Identificar la relación que existe entre la provincia, nivel de educación y etnia en las defunciones en el Ecuador en el 2023.
+
+**Visualización**: Se utiliza ggplot para realizar el gráfico junto con el lenguaje de programación R para realizar el grafico en el día `Makeover`.
+
+**Conjunto de datos**: Los datos son obtenidos del Instituto Nacional de Estadísticas y Censos de Ecuador [INEC](https://aplicaciones3.ecuadorencifras.gob.ec/BIINEC-war/index.xhtml), la misma que es la institución rectora de la estadística nacional de Ecuador. A partir de estos datos se agrupan por provincia, nivel educativo y etnia para contar las frecuencia de sus relaciones en la cantidad de fallecimientos.
+
+### Día 4: Waffle
+
+```{r}
+data_graphic$etnia <- replace(data_graphic$etnia, data_graphic$etnia == "Afroecuatoriano (a) /Afrodescendiente", "Afroecuatoriano")
+
+
+data_wafle <- data_graphic %>%
+  count(etnia) %>%
+  mutate(porcentaje = n / sum(n) * 100) %>% 
+  arrange(desc(porcentaje)) %>%
+  select(etnia,porcentaje)
+
+data_wafle$etnia <- paste(data_wafle$etnia, round(data_wafle$porcentaje,2),"%", sep = " ")
+waffle_plot <- waffle(data_wafle, rows = 10,
+                      size = 1.2) +
+labs(
+    title = "Fallecimientos por etnia en Ecuador",
+    subtitle = str_wrap("Distribución porcentual de los fallecimientos por etnia regsitrados en Ecuador durante el año 2023."),
+    caption = "Créditos: Jonnathan Campoberde  Fuente: INEC"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16)  ,
+    plot.subtitle = element_text(size = 12),
+    legend.position = "right",
+    legend.title = element_blank(),
+    plot.caption = element_text(hjust = -0.1, size = 8),
+    plot.background = element_rect(fill = "#f5f5f2", color = NA),
+    panel.grid = element_blank(), 
+    legend.text = element_text(size = 12)
+  )
+
+print(waffle_plot)
+
+```
+
+**Audiencia**: Dirigido a todos los interesados en analizar las estadísticas de fallecimientos registrados en Ecuador en el año 2023, visualizando las diferencias en las tasas de mortalidad entre las diversas comunidades étnicas del país.
+
+**Objetivo**: Identificar los grupos etnicos con mayor cantidad de fallecimientos registrados en el año 2023.
+
+**Visualización**: Se utiliza ggplot, junto a la libreria waffle para la realización del gráfico empleando el lenguaje de programación R en el día `Waffle`.
+
+**Conjunto de datos**: Los datos son obtenidos del Instituto Nacional de Estadísticas y Censos de Ecuador [INEC](https://aplicaciones3.ecuadorencifras.gob.ec/BIINEC-war/index.xhtml), la misma que es la institución rectora de la estadística nacional de Ecuador. A partir de estos datos se agrupan por etnia, para contar las frecuencia de sus relaciones en la cantidad de fallecimientos.
+
+### Día 5: Diverging
+
+```{r}
+data_entry_country <- read_csv("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_one/five_chart.csv")
+```
+
+```{r}
+data_entry_country$fecha_movi <- as.Date(data_entry_country$fecha_movi)
+
+frecuency <- table(data_entry_country$fecha_movi)
+frecuency_by_day <- as.data.frame(frecuency)
+names(frecuency_by_day) <- c("fecha", "frecuencia")
+frecuency_by_day$fecha <- as.Date(frecuency_by_day$fecha)
+frecuency_by_day <- frecuency_by_day %>% arrange(fecha)
+```
+
+```{r}
+ggplot(frecuency_by_day, aes(x = fecha, y = frecuencia)) +
+  geom_line(color = "#2C3E50", size = 1) +
+  geom_smooth(method = "loess", se = FALSE, color = "#E74C3C", size = 0.8, linetype = "dashed") +
+  labs(
+    title = "Entradas internacionales en pandemia",
+    subtitle = str_wrap("Frecuencia de ingresos internacionales a Ecuador durante el pico de la pandemia de COVID-19, mostrando las variaciones en la cantidad de ingresos al país en el momento más crítico de la crisis sanitaria global."),
+    caption = "Créditos: Jonnathan Campoberde  Fuente: INEC",
+    x = "Fecha",
+    y = "Frecuencia",
+  ) +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5, color = "#2C3E50"),
+    plot.subtitle = element_text(size = 12, hjust = 0.5, color = "#34495E"),
+    axis.title = element_text(size = 12, color = "#34495E"),
+    axis.text = element_text(size = 10, color = "#34495E"),
+    panel.grid.major = element_line(color = "#BDC3C7", linetype = "dotted"),
+    plot.caption = element_text(hjust = -0.1, size = 8)
+  )
+```
+
+**Audiencia**: Dirigido a aquellos que deseen comprender cómo afectó la pandemia a la movilidad y economía de Ecuador, especialmente en términos de ingreso de extranjeros en un periodo crítico.
+
+**Objetivo**: Mostrar el impacto de la pandemia de COVID-19 en los ingresos internacionales a Ecuador durante su periodo más crítico, destacando cómo las restricciones de viaje y las políticas de control fronterizo afectaron la frecuencia de llegadas al país.
+
+**Visualización**: Se utiliza ggplot para la realización del gráfico empleando el lenguaje de programación R en el día `Diverging`.
+
+**Conjunto de datos**: Los datos son obtenidos del Instituto Nacional de Estadísticas y Censos de Ecuador [INEC](https://aplicaciones3.ecuadorencifras.gob.ec/BIINEC-war/index.xhtml), la misma que es la institución rectora de la estadística nacional de Ecuador. A partir de estos datos se agrupan por fecha para contar las frecuencia de ingresos internaciones a Ecuador.
+
+### Día 6: OECD
+
+```{r}
+suicide_rates <- read_csv("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_one/suicide_rates_OECD.csv")
+filtered_data <- suicide_rates[suicide_rates$Sex == "Total", c("TIME_PERIOD", "OBS_VALUE", "Reference_area")]
+colnames(filtered_data) <- c("Year", "Value", "Country")
+
+top_countries_per_year <- filtered_data %>%
+  group_by(Year) %>%
+  top_n(3, Value) %>%
+  ungroup()
+
+
+p <- ggplot(top_countries_per_year, aes(x = Year, y = Value, fill = Country)) +
+  geom_bar(stat = "identity", position = "stack") +  # Apilar las barras
+  scale_fill_brewer(palette = "Reds") + 
+  labs(
+    x = "Año",
+    y = "Tasa de suicidio",
+    fill = "País"
+  ) +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 18, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12),
+    plot.subtitle = element_text(size = 12, hjust = 0.5, color = "#34495E"),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    plot.caption = element_text(hjust = 0, size = 12),
+  )
+
+# Convertir el gráfico en interactivo con plotly
+p_interactive <- ggplotly(p) %>%
+  layout(
+    autosize = TRUE,
+    width = 700,  # Ancho ajustado
+    height = 400,  # Alto ajustado
+    xaxis = list(title = "Año"),
+    yaxis = list(title = "Tasa de suicidios"),
+    showlegend = TRUE
+  )
+
+title <- htmltools::tags$h3("Top 3 países con mayor tasa de suicidio", 
+                             style = "text-align: center;")
+description <- htmltools::tags$p("La gráfica presenta las tasas de suicidio en los tres países con los índices más altos, estandarizadas por edad según la población de la OCDE de 2010. Se mide como muertes por cada 100,000 habitantes, considerando variaciones en los criterios de reporte.")
+
+caption <- htmltools::tags$footer("Créditos: Jonnathan Campoberde  Fuente: OECD", 
+                                   style = "text-align: left; font-size: 11px;")
+
+# Estilo del contenedor sin bordes y más compacto
+style_container <- "border: none; padding: 0; margin: 0; height: 450px;"  # Ajustar altura del contenedor
+
+container <- htmltools::tags$div(
+  style = style_container,  
+  p_interactive
+)
+
+browsable(tagList(title, description, container, caption))
+```
+
+**Audiencia**: La audiencia de esta gráfica abarca una amplia gama de interesados en el tema del suicidio y la salud mental. En primer lugar, investigadores y académicos son un grupo clave, ya que esta visualización les permite analizar tendencias y patrones en las tasas de suicidio, así como comprender los factores que contribuyen a estas variaciones entre países.
+
+**Objetivo**: Visualizar las tasas de suicidio en los tres países con los índices más altos, facilitando la comparación y el análisis de las tendencias a lo largo del tiempo.
+
+**Visualización**: Se utiliza ggplot junto con ggplotly para la realización del gráfico interactivo empleando el lenguaje de programación R en el día `OECD`.
+
+**Conjunto de datos**: Los datos son obtenidos del Organización para la Cooperación y Desarrollo Económico [OECD](https://www.oecd.org/en/data/indicators/suicide-rates.html?oecdcontrol-31056b3eeb-var6=_T) el cual es un organismo de cooperación internacional compuesto por 38 Estados, cuyo objetivo es coordinar sus políticas económicas y sociales. A partir de estos datos se agrupan por año con el índice de suicidio más alto para mostrar en un grafico de barras apiladas.
+
+## Categoria: Distribución
+
+### Día 7: Hazards
+
+```{r}
+natural_disasters <- read_csv("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_two/natural_disasters.csv")
+
+paises_sudamerica <- c(
+    "Argentina",
+    "Bolivia",
+    "Brasil",
+    "Chile",
+    "Colombia",
+    "Ecuador",
+    "Guyana",
+    "Paraguay",
+    "Perú",
+    "Surinam",
+    "Uruguay",
+    "Venezuela"
+)
+
+
+natural_disasters <- natural_disasters %>%
+  select(
+    "Country name",
+    "Year",
+    "Number of deaths from drought",
+    "Number of deaths from earthquakes",
+    "Number of deaths from disasters",
+    "Number of deaths from volcanic activity",
+    "Number of deaths from floods",
+    "Number of deaths from mass movements",
+    "Number of deaths from storms",
+    "Number of deaths from landslides",
+    "Number of deaths from fog",
+    "Number of deaths from wildfires",
+    "Number of deaths from extreme temperatures",
+    "Number of deaths from glacial lake outbursts"
+  ) %>%
+  rename_with(~ gsub(" ", "_", .x) %>% tolower()) %>%
+  filter(year >= 2000 & country_name %in% paises_sudamerica)%>%
+  mutate(total = rowSums(select(., starts_with("number_of_deaths")), na.rm = TRUE))
+  
+```
+
+```{r}
+natural_disasters <- natural_disasters %>%
+  rename(
+    "Country" = country_name, 
+    "Year" = year ,
+    "Total" = total 
+  )
+
+top_countries_year <- natural_disasters %>%
+  group_by(Year) %>%
+  top_n(1, Total) %>%
+  ungroup()
+
+
+p_natural_disasters <- ggplot(top_countries_year, aes(x = Year, y = Total, fill = Country)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_brewer(palette = "Reds") + 
+  labs(
+    x = "Año",
+    y = "Número de muertes por desastre natural",
+    fill = "País") +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 18, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12),
+    plot.subtitle = element_text(size = 12, hjust = 0.5, color = "#34495E"),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    plot.caption = element_text(hjust = 0, size = 12),
+  )  +
+  scale_x_continuous(breaks = seq(min(top_countries_year$Year), max(top_countries_year$Year), by = 4))
+
+
+
+p_interactive_disasters <- ggplotly(p_natural_disasters) %>%
+  layout(
+    autosize = TRUE,
+    width = 700,  # Ancho ajustado
+    height = 400,  # Alto ajustado
+    xaxis = list(title = "Año"),
+    yaxis = list(title = "Total muertes"),
+    showlegend = TRUE
+  )
+
+
+title <- htmltools::tags$h3("Paises de sudamerica con mayor cantidad de muertes", 
+                             style = "text-align: center;")
+description <- htmltools::tags$p("Países de Sudamérica con mayor cantidad de muertes por desastres naturales en la región desde el año 2000, destacando los países con la cifra más altas por año.")
+
+caption <- htmltools::tags$footer("Créditos: Jonnathan Campoberde  Fuente: Our World in Data", 
+                                   style = "text-align: left; font-size: 11px;")
+
+style_container <- "border: none; padding: 0; margin: 0; height: 450px;"
+
+container_disasters <- htmltools::tags$div(
+  style = style_container,  
+  p_interactive_disasters
+)
+
+browsable(tagList(title, description, container_disasters, caption))
+```
+
+**Audiencia**: Personas interesadas en conocer el impacto de los desastres naturales en Sudamérica, así como su historia reciente y las consecuencias que han tenido en sus países y y las tendencias de mortalidad a lo largo del tiempo por desastres naturales.
+
+**Objetivo**: Mostrar cómo han cambiado las tasas de mortalidad por desastres naturales a lo largo de los años en la región.
+
+**Visualización**: Se utiliza ggplot junto con ggplotly para la realización del gráfico interactivo empleando el lenguaje de programación R en el día `Hazards`.
+
+**Conjunto de datos**: Los datos son obtenidos de [Our World in Data](https://ourworldindata.org/) el mismo que es una publicación en-línea que presenta datos y resultados empíricos que muestran el cambio en las condiciones de vida en todo mundo. A partir de estos datos se obtiene el pais con mayor cantidad de muertes por año para mostrar en un grafico de barras.
+
+### Día 8: Circular
+
+```{r}
+quitar_tildes_mayu <- function(nombre) {
+  nombre <- gsub("á", "a", nombre)
+  nombre <- gsub("é", "e", nombre)
+  nombre <- gsub("í", "i", nombre)
+  nombre <- gsub("ó", "o", nombre)
+  nombre <- gsub("ú", "u", nombre)
+  nombre <- gsub("Á", "A", nombre)
+  nombre <- gsub("É", "E", nombre)
+  nombre <- gsub("Í", "I", nombre)
+  nombre <- gsub("Ó", "O", nombre)
+  nombre <- gsub("Ú", "U", nombre)
+  nombre <- toupper(nombre)
+  nombre<- gsub("ESTADOS UNIDOS DE AMERICA", "ESTADOS UNIDOS", nombre)
+  return(nombre)
+}
+
+data_entry_country$pais_prod <- sapply(data_entry_country$pais_prod, quitar_tildes_mayu)
+
+data_country <- data_entry_country %>% 
+  mutate(pais_prod = as.factor(pais_prod))
+
+data_frecuency <- data_entry_country %>%
+  group_by(pais_prod) %>%
+  summarise(cantidad = n()) %>%
+  top_n(5, cantidad) %>%
+  arrange(desc(cantidad))
+
+data_frecuency$cantidad <- as.integer(data_frecuency$cantidad)
+text_col <- "#333333"
+data_frecuency <- data_frecuency %>%
+  mutate(img_path = file.path("data","week_two","images", paste0(gsub(" ", "_", pais_prod), ".png")),
+  img_circ = crop_circle(
+      img_path,
+      border_size = 16,
+      border_colour = text_col
+    )
+  )
+
+font_add_google("Ubuntu", "ubuntu")
+showtext_auto()
+
+bg_col <- "#F5F5F5"       
+text_col <- "#333333"     
+highlight_col <- "#87CEEB" 
+body_font <- "ubuntu"     
+title_font <- "ubuntu"     
+
+
+```
+
+```{r}
+ggplot(
+  data = data_frecuency,
+  mapping = aes(
+    x = reorder(pais_prod, cantidad),
+    y = cantidad
+  )
+) +
+  geom_col(
+    mapping = aes(
+      y = cantidad / 2
+    ),
+    fill = highlight_col,
+  ) +
+  geom_chicklet(
+    fill = highlight_col,
+    colour = NA,
+    radius = grid::unit(5, "mm")
+  ) +
+  geom_text(
+    mapping = aes(
+      x = pais_prod,
+      y = cantidad + 0.5,
+      label = paste0(round(cantidad))
+    ),
+    colour = text_col,
+    family = body_font,
+    fontface = "bold",
+    size = 5,
+    hjust = -0.8
+  ) +
+  geom_image(
+    mapping = aes(y = cantidad,
+                  image = img_circ),
+    size = 0.13
+  ) +
+  coord_flip() +
+  scale_y_continuous(
+    expand = expansion(mult = c(0, 0.01)),
+    limits = c(0, max(data_frecuency$cantidad) * 1.4)
+  ) +
+  theme_minimal(base_size = 12, base_family = body_font) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5, color = "#2C3E50"),
+    plot.subtitle = element_text(size = 12, hjust = 0.5, color = "#34495E"),
+    axis.title = element_text(size = 12, color = "#34495E"),
+    axis.text = element_text(size = 10, color = "#34495E"),
+    plot.margin = margin(5, 5, 5, 5), 
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(colour = text_col, size = 8),
+    panel.grid = element_blank(),
+    plot.background = element_rect(fill = bg_col, colour = NA),
+    plot.caption = element_text(hjust = -0.2, size = 10, colour = text_col)
+  ) +
+  labs(
+    title = "Países de Origen de las Personas que Ingresaron Durante la Pandemia",
+    subtitle = str_wrap("Este gráfico muestra los países de origen de las personas que ingresaron a Ecuador durante el periodo de la pandemia (2020-2021), resaltando las procedencias más comunes."),
+    caption = "Créditos: Jonnathan Campoberde  Fuente: INEC",
+    y = "",
+    x = ""
+  )
+```
+
+**Audiencia**: La audiencia para este gráfico serían analistas de políticas públicas, investigadores en salud y estudios migratorios, así como funcionarios gubernamentales y organizaciones internacionales interesadas en comprender los patrones migratorios durante la pandemia.
+
+**Objetivo**: Ilustrar los países de procedencia de las personas que ingresaron durante la pandemia, facilitando el análisis de patrones migratorios y posibles variaciones en los flujos de personas en un contexto de restricciones y controles fronterizos. Esto permitirá identificar tendencias y evaluar el impacto de la pandemia en la movilidad internacional, ayudando a orientar políticas y estrategias de manejo de futuras crisis de salud global.
+
+**Visualización**: Se utiliza ggplot junto con ggplotly para la realización del gráfico empleando el lenguaje de programación R en el día `Circular`.
+
+**Conjunto de datos**: Los datos son obtenidos del Instituto Nacional de Estadísticas y Censos de Ecuador [INEC](https://aplicaciones3.ecuadorencifras.gob.ec/BIINEC-war/index.xhtml), la misma que es la institución rectora de la estadística nacional de Ecuador. A partir de estos datos de ingresos internacionales a Ecuador se agrupan por frecuencia del pais de precedencia.
+
+### Día 9: Major/Minor
+
+```{r, echo=FALSE, out.width="100%", out.height="100%", message=FALSE, warning=FALSE}
+#| echo: false
+#| warning: false
+#| error: false
+imagen <- png::readPNG("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_two/day_9.png")
+grid::grid.raster(imagen)
+```
+
+**Audiencia**: Cualquier persona interesada en conocer cómo la pandemia ha afectado los movimientos migratorios en Ecuador y sus repercusiones en la sociedad buscando entender los cambios en los patrones migratorios en respuesta a la pandemia.
+
+**Objetivo**: El objetivo de la gráfica sobre las entradas y salidas internacionales de personas en Ecuador en los años 2020 y 2021 para proporcionar una comprensión clara de cómo la pandemia de COVID-19 ha influyo en los patrones migratorios en el país.
+
+**Visualización**: Se utiliza la herramienta de análisis de datos y visualización Power BI para la realizar el gráfico en el día `Major/Minor`.
+
+**Conjunto de datos**: Los datos son obtenidos del Instituto Nacional de Estadísticas y Censos de Ecuador [INEC](https://aplicaciones3.ecuadorencifras.gob.ec/BIINEC-war/index.xhtml), la misma que es la institución rectora de la estadística nacional de Ecuador. A partir de estos datos se suma las entradas y salidas internacionales por mes en Ecuador agrupando en base a frecuencia.
+
+### Día 10: Physical
+
+```{r, echo=FALSE, fig.cap="Talla de los nacidos vivos en Ecuador", out.width="100%", out.height="100%",fig.align='center'}
+#| echo: false
+#| warning: false
+#| error: false
+knitr::include_url("https://datawrapper.dwcdn.net/ka5Vm/1/",height = "500px")
+```
+
+**Audiencia**: La audiencia de esta gráfica incluye profesionales de la salud, investigadores, y académicos interesados en el desarrollo infantil y la salud pública en Ecuador. También se dirige a responsables de políticas gubernamentales y organizaciones no gubernamentales que trabajan en áreas relacionadas con la salud materno-infantil, así como a estudiantes de áreas de salud, nutrición y sociología.
+
+**Objetivo**: El objetivo de la gráfica es analizar y presentar la distribución de la talla de los recién nacidos vivos en Ecuador, con el fin de identificar patrones y tendencias que contribuyan a una mejor comprensión de la salud infantil en el país.
+
+**Visualización**: Se utiliza la herramienta datawrapper para la realizar el gráfico en el día `Physical`.
+
+**Conjunto de datos**: Los datos son obtenidos del Instituto Nacional de Estadísticas y Censos de Ecuador [INEC](https://aplicaciones3.ecuadorencifras.gob.ec/BIINEC-war/index.xhtml), la misma que es la institución rectora de la estadística nacional de Ecuador. A partir de estos datos se cuenta la frecuencia de repetición de la talla de los nacidos vivos.
+
+### Día 11: Mobile-friendly
+
+```{r}
+df_selling_mobile <- read_csv("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_two/Top_selling_mobile_phones.csv")
+df_selling_mobile <- df_selling_mobile[, -1]
+```
+
+```{r}
+
+colnames(df_selling_mobile) <- c("Manufacturer", "Model","Form_Factor","Is_Smartphone","Year","Sales_Million")
+
+data_counts <- df_selling_mobile %>%
+  group_by(Manufacturer, Form_Factor) %>%
+  summarise(Freq = n(), .groups = 'drop')
+
+nodes <- data.frame(name = unique(c(as.character(data_counts$Manufacturer), 
+                                     as.character(data_counts$Form_Factor))))
+
+data_counts$linkSource <- match(data_counts$Manufacturer, nodes$name) - 1
+data_counts$linkTarget <- match(data_counts$Form_Factor, nodes$name) - 1
+
+links <- data_counts %>% select(source = linkSource, target = linkTarget, value = Freq)
+
+max_value <- max(links$value) 
+links$value <- links$value / max_value * 10 
+
+sankey <- sankeyNetwork(Links = links, Nodes = nodes, Source = "source", 
+                         Target = "target", Value = "value", 
+                         NodeID = "name", fontSize = 12,  
+                         nodeWidth = 30, 
+                         colourScale = JS("d3.scaleOrdinal(['#2c3e50', '#2980b9', '#e74c3c', '#8e44ad', '#f39c12', '#27ae60'])"),
+                         width = 750, 
+                         height = 600)   
+
+style_container <- "border: 1px solid #ccc; border-radius: 5px; padding: 20px; background-color: #f9f9f9;"
+
+
+title <- htmltools::tags$h3("Telefonos móviles más vendidos", 
+                             style = "text-align: center;")
+description <- htmltools::tags$p("Este gráfico de Sankey ilustra las interacciones entre las marcas de teléfonos y sus diseños desde 1996 hasta 2022. A través de flujos visuales, se destacan cómo las preferencias de los consumidores y las innovaciones tecnológicas han influido en el mercado, mostrando la evolución de las marcas y los tipos de diseño.")
+
+caption <- htmltools::tags$footer("Créditos: Jonnathan Campoberde  Fuente: Kaggle", 
+                                   style = "text-align: rigth;font-size: 11px;")
+
+container <- htmltools::tags$div(
+  style = style_container,  
+  sankey
+)
+
+browsable(tagList(title, description, container, caption))
+```
+
+**Audiencia**: La audiencia de este gráfico de Sankey incluye investigadores y académicos que estudian el mercado de teléfonos móviles, profesionales de marketing interesados en tendencias de consumo, desarrolladores y diseñadores de productos que buscan entender la evolución de las marcas y consumidores curiosos sobre la historia de los teléfonos móviles.
+
+**Objetivo**: El objetivo de este gráfico de Sankey es visualizar las interacciones entre las marcas de teléfonos móviles y sus diseños desde 1996 hasta 2022, destacando las tendencias en el mercado y las evoluciones en las preferencias de los consumidores.
+
+**Visualización**: Se utiliza ggplot para realizar el gráfico junto con el lenguaje de programación R para realizar el grafico en el día `Mobile-friendly`.
+
+**Conjunto de datos**: Los datos son obtenidos de la plataforma de competencia de ciencia de datos y una comunidad en línea para científicos de datos y profesionales del aprendizaje automático de Google [Kaggle](https://www.kaggle.com/datasets/saquib7hussain/list-of-best-selling-mobile-phones). A partir de estos datos se agrupa por la frecuencia de la marca y la forma para encontrar la relación existente entre ellos.
+
+### Día 12: Reuters Theme
+
+```{r}
+df_gdp_countries <- read.csv2("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_two/countries_gdp_hist.csv")
+```
+
+```{r}
+df_gdp_ecuador <- df_gdp_countries %>%
+  select(
+    "country_name",
+    "total_gdp",
+    "total_gdp_million",
+    "year"
+  ) %>%
+  filter(year >= 2000 & country_name == "Ecuador")
+
+df_gdp_ecuador$total_gdp_million <- as.numeric(df_gdp_ecuador$total_gdp_million)
+df_gdp_ecuador$total_gdp <- as.numeric(df_gdp_ecuador$total_gdp)
+
+colnames(df_gdp_ecuador) <- c("Pais", "Total PBI", "Total PBI (Millon)","Año")
+
+pib_plot <- ggplot(df_gdp_ecuador, aes(x = `Año`, y = `Total PBI (Millon)`)) +
+  geom_line(aes(group = 1), color = "#003DA5", size = 1.2) +  # Azul
+  geom_point(color = "#C8102E", size = 3) +  # Rojo
+  labs(x = "Año",
+       y = "PIB en miles de millones USD") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),  # Amarillo
+    plot.background = element_rect(fill = "transparent", color = NA),  
+    panel.background = element_rect(fill = "transparent"), 
+    plot.margin = margin(1, 1, 1, 1, "cm")
+  )
+
+pib_plotly <- ggplotly(pib_plot)
+
+title <- htmltools::tags$h3("Evolución del PIB en Ecuador", style = "text-align: center;")
+description <- htmltools::tags$p("Grafica de la evolución del Producto Interno Bruto (PIB) en Ecuador desde el año 2021 hasta 2020, ilustra  la trayectoria del PIB a lo largo de dos décadas.")
+
+caption <- htmltools::tags$footer("Créditos: Jonnathan Campoberde  Fuente: Kaggle", 
+                                   style = "text-align: rigth;font-size: 11px;")
+
+container <- htmltools::tags$div(
+  style = style_container,  
+  pib_plotly
+)
+
+browsable(tagList(title, description, container, caption))
+```
+
+**Audiencia**: La audiencia del gráfico sobre la evolución del PIB en Ecuador (2000-2020) incluye educadores, estudiantes, economistas, analistas, inversionistas y el público en general que necesite tener una comprensión de la situación económica del país a lo largo de dos décadas.
+
+**Objetivo**: El objetivo del gráfico sobre la evolución del PIB en Ecuador (2000-2020) es proporcionar una representación visual clara y comprensible de las tendencias económicas del país durante dos décadas.
+
+**Visualización**: Se utiliza ggplot para realizar el gráfico junto con el lenguaje de programación R para realizar el grafico en el día `Mobile-friendly`.
+
+**Conjunto de datos**: Los datos son obtenidos de la plataforma de competencia de ciencia de datos y una comunidad en línea para científicos de datos y profesionales del aprendizaje automático de Google [Kaggle](https://www.kaggle.com/datasets/fredericksalazar/pib-gdp-global-by-countries-since-1960-to-2021). A partir de estos datos se filtran el país Ecuador para su analisis y el rango de fechas de 2000 a 2021.
+
+## Relaciones
+
+### Día 14: Heatmap
+
+```{r}
+
+south_america <- c("Argentina", "Bolivia", "Brazil", "Chile", "Colombia", 
+                    "Ecuador", "Falkland Islands", "French Guiana", 
+                    "Guyana", "Paraguay", "Peru", "Suriname", 
+                    "Uruguay", "Venezuela")
+
+df_gdp_countries_test<-df_gdp_countries
+
+df_gdp_countries$country_name <- gsub("Bolivarian Republic of", "",df_gdp_countries$country_name)
+
+df_gdp_countries$country_name <- gsub("Plurinational State of", "",df_gdp_countries$country_name)
+
+df_gdp_countries$country_name <- trimws(gsub("\\s*\\(.*?\\)", "",df_gdp_countries$country_name))
+
+df_gdp_south_america <- df_gdp_countries %>%
+  select(
+    "country_name",
+    "total_gdp_million",
+    "year"
+  ) %>%
+  filter(year == 2014 & country_name %in% south_america)
+
+df_gdp_south_america <- df_gdp_south_america[, -ncol(df_gdp_south_america)]
+df_gdp_south_america$country_name <- as.factor(df_gdp_south_america$country_name)
+df_gdp_south_america$total_gdp_million <- as.numeric(df_gdp_south_america$total_gdp_million)
+
+colnames(df_gdp_south_america) <- c("Pais", "Total PBI (Millon)")
+```
+
+```{r}
+sudamerica <- ne_countries(scale = "medium", returnclass = "sf")
+
+map_data <- sudamerica %>%
+  inner_join(df_gdp_south_america, by = c("name" = "Pais"))
+
+p <- ggplot(data = map_data) +
+  geom_sf(aes(fill = `Total PBI (Millon)`, text = paste("País:", name_long, "<br>Total PBI (Millón):", `Total PBI (Millon)`))) +
+  scale_fill_viridis_c(option = "plasma") +
+  labs(fill = "Total PBI (Millón)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    plot.background = element_rect(fill = "transparent", color = NA),  
+    panel.background = element_rect(fill = "transparent")
+  ) +
+  scale_x_continuous(breaks = seq(-90, -35, by = 20))
+
+p_dynamic <- ggplotly(p, tooltip = "text")
+
+style_container <- "border: 1px solid #ccc; border-radius: 5px; padding: 20px; background-color: #f9f9f9;"
+
+
+title <- htmltools::tags$h3("Mapa de Calor del PBI en Sudamérica", style = "text-align: center;")
+description <- htmltools::tags$p("Comparación del Producto Bruto Interno (PBI) en millones de dólares por paises en el año 2014.",
+                                 style = "text-align: center;")
+
+caption <- htmltools::tags$footer("Créditos: Jonnathan Campoberde  Fuente: Kaggle", 
+                                   style = "text-align: rigth;font-size: 11px;")
+
+container <- htmltools::tags$div(
+  style = style_container,  
+  p_dynamic
+)
+
+browsable(tagList(title, description, container, caption))
+```
+
+**Audiencia**: La audiencia del gráfico es una amplia audiencia, que incluye académicos y estudiantes de economía interesados en análisis comparativos, así como a policymakers y funcionarios públicos que requieren datos económicos para la formulación de políticas y el público general con interés en el contexto económico de su país ya que proporciona un entendimiento claro sobre el desempeño económico de Sudamérica en el año 2014.
+
+**Objetivo**: El objetivo del gráfico es proporcionar una visualización clara y comprensible de las diferencias en el PBI entre los países de Sudamérica durante ese año. A través de esta comparación, se busca facilitar el análisis del desempeño económico regional, permitiendo a los espectadores identificar patrones, tendencias y disparidades económicas.
+
+**Visualización**: Se utiliza ggplot para realizar el mapa de calor junto con el lenguaje de programación R para realizar el grafico en el día `Reuters Theme`.
+
+**Conjunto de datos**: Los datos son obtenidos de la plataforma de competencia de ciencia de datos y una comunidad en línea para científicos de datos y profesionales del aprendizaje automático de Google [Kaggle](https://www.kaggle.com/datasets/fredericksalazar/pib-gdp-global-by-countries-since-1960-to-2021). A partir de estos datos se filtran los paises de Sudamerica para su analisis y en el año 2014.
+
+### Día 15: Historical
+
+```{r, echo=FALSE, fig.cap="Evolución del Precio del Bitcoin", fig.align='center'}
+knitr::include_url("https://datawrapper.dwcdn.net/dN6LC/1/",height = "450px")
+```
+
+**Audiencia**: Aquellos interesados en invertir en criptomonedas o que ya están activos en el mercado del Bitcoin, buscando comprender su comportamiento a lo largo del tiempo.
+
+**Objetivo**: El objetivo de este gráfico es analizar y visualizar las fluctuaciones anuales de los precios de apertura y cierre del Bitcoin, proporcionando a los inversores, analistas y entusiastas del mercado una herramienta efectiva para entender la evolución de este activo a lo largo del tiempo.
+
+**Visualización**: Se utiliza la herramienta datawrapper para realizar un grafico de rangos en el día `Historical`.
+
+**Conjunto de datos**: Los datos son obtenidos de la plataforma financiera que ofrece información sobre mercados financieros en todo el mundo [Investing.com](https://es.investing.com/crypto/bitcoin/historical-data). A partir de estos datos se filtran los datos de apertura y cierre del bitcoin agrupandolos por año.
+
+### Día 16: Weather
+
+```{r, echo=FALSE, fig.cap="Temperatura Máxima Registrada en Agosto", fig.align='center'}
+knitr::include_url("https://datawrapper.dwcdn.net/1BDAU/1/",height = "450px")
+```
+
+**Audiencia**: La audiencia abarca a meteorólogos, investigadores climáticos, y estudiantes interesados en los patrones climáticos de los Andes ecuatorianos, así como a autoridades locales y responsables de políticas que puedan usar estos datos para planificar en salud pública y actividades al aire libre. También incluye a turistas y planificadores de viajes que buscan información sobre el clima típico de estas ciudades andinas en agosto.
+
+**Objetivo**: El objetivo de esta gráfica es proporcionar una comparación clara y accesible de las temperaturas máximas en Quito y Cuenca durante el mes de agosto para analizar las variaciones climáticas entre ambas ciudades.
+
+**Visualización**: Se utiliza la herramienta datawrapper para realizar un grafico de lineas multiples en el día `Weather`.
+
+**Conjunto de datos**: Los datos son obtenidos de Open-Meteo, el cual es un servicio de pronóstico meteorológico que proporciona datos climáticos a través de una API gratuita.[Open-Meteo](https://open-meteo.com/). A partir de estos datos se filtran por dia y se agrupar para obtener la temperatura máxima registras.
+
+### Día 17: Networks
+
+```{r}
+df_blood_group <- read.csv2("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_three/grupos_sanguineos.csv")
+names(df_blood_group)<-c("Grupo","Donante","Receptor")
+```
+
+```{r}
+str_universal <-"A+,A-,B+,B-,AB+,AB-,O+,O-"
+df_blood_group$Donante <- trimws(gsub("Puede donar a", "", df_blood_group$Donante))
+df_blood_group$Donante <- trimws(gsub("y", ",", df_blood_group$Donante))
+df_blood_group$Donante <- trimws(gsub("Donante universal", str_universal, df_blood_group$Donante))
+
+
+df_blood_group$Receptor <- trimws(gsub("Puede recibir de", "", df_blood_group$Receptor))
+df_blood_group$Receptor <- trimws(gsub("y", ",", df_blood_group$Receptor))
+df_blood_group$Receptor <- trimws(gsub("Receptor universal", str_universal, df_blood_group$Receptor))
+
+
+df_blood_graph <- df_blood_group %>%
+  separate_rows(Receptor, sep = ",\\s*") %>%
+  select("Grupo","Receptor")  %>%
+  arrange(Grupo)
+
+df_blood_graph$Grupo <- trimws(df_blood_graph$Grupo) 
+df_blood_graph$Receptor <- trimws(df_blood_graph$Receptor) 
+
+df_blood_graph$Grupo <- factor(df_blood_graph$Grupo) 
+df_blood_graph$Receptor <- factor(df_blood_graph$Receptor) 
+```
+
+```{r}
+set.seed(13)
+
+# Crear el grafo
+g <- graph_from_data_frame(df_blood_graph, directed = TRUE)
+
+# Configurar los colores de los vértices
+vertex_colors <- ifelse(V(g)$name %in% c("A+", "A-", "B+", "B-", "AB+", "AB-"), "skyblue", "lightgreen")
+edge_colors <- "gray"
+
+# Ajustar la disposición con un mayor número de iteraciones para acercar los vértices
+layout_matrix <- layout_with_drl(g, options = list(simmer.attraction = 0.2, niter = 5000))
+
+# Dibujar el grafo con vértices más cercanos
+plot(g,
+     vertex.size = 20,
+     vertex.label.cex = 0.70,
+     vertex.label.color = "black",
+     vertex.color = vertex_colors,
+     edge.arrow.size = 0.4,
+     edge.color = edge_colors,
+     main = "Compatibilidad de Grupos Sanguíneos para Recepción",
+     layout = layout_matrix,
+     bg = "#E5E5E5")
+
+# Agregar subtítulo y créditos
+mtext(str_wrap("Visualización de las relaciones de donación y recepción entre distintos grupos sanguíneos, destacando compatibilidades clave para la transfusión segura."),
+      side = 3,
+      line = 0,
+      cex = 0.8,
+      font = 1)
+
+mtext("Créditos: Jonnathan Campoberde  Fuente: Centro de Transfusión, Tejidos y Células de Málaga",
+      side = 1,
+      line = 3,
+      cex = 0.6,
+      font = 3)
+
+```
+
+**Audiencia**: La audiencia de esta imagen sobre la compatibilidad entre grupos sanguíneos incluye principalmente a profesionales de la salud, como médicos y enfermeros, para quienes esta visualización es crucial en el contexto de transfusiones seguras, además de estudiantes de medicina y ciencias de la salud que buscan una comprensión visual de las relaciones de compatibilidad.
+
+**Objetivo**: El objetivo de esta visualización es ilustrar de manera clara y efectiva las relaciones de donación y recepción entre diferentes grupos sanguíneos, destacando las compatibilidades clave que son esenciales para asegurar transfusiones seguras.
+
+**Visualización**: Se utiliza ggplot junto con igraph para visualizar el grafo de los grupos sanguineos en el día `Networks`.
+
+**Conjunto de datos**: Los datos son obtenidos de Centro del [Centro de Transfusión, Tejidos y Células de Málaga](http://www.donantesmalaga.org/). A partir de estos se modifican para obtener la estructura de un grafo dirigido con las columnas `grupo sanguineo` y `receptor` mostrando las relaciones existentes entre los grupos sanguineos.
+
+### Día 18: Asian Development Bank
+
+```{r}
+df_climate_2023 <- read_csv("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_three/ADB_Climate_Change_Financing_2023.csv")
+
+df_climate_2023 <- df_climate_2023 %>% clean_names(case = "snake")
+df_climate_2023$date_signed <- as.Date(df_climate_2023$date_signed, format = "%d-%b-%y")
+df_climate_2023$adaptation_finance_million <- as.numeric(df_climate_2023$adaptation_finance_million) %>% replace_na(0)
+df_climate_2023$mitigation_finance_million <- as.numeric(df_climate_2023$mitigation_finance_million) %>% replace_na(0)
+
+df_climate <- df_climate_2023 %>%
+  mutate(month = floor_date(date_signed, "month")) %>%
+  group_by(month) %>%
+  summarise(
+    adaptation_finance_month = sum(adaptation_finance_million, na.rm = TRUE),
+    mitigation_finance_month = sum(mitigation_finance_million, na.rm = TRUE)
+  ) %>%
+  select(month,adaptation_finance_month, mitigation_finance_month)
+
+grafico <- plot_ly(data = df_climate, x = ~month) %>%
+  add_lines(y = ~adaptation_finance_month, name = "Adaptación", line = list(color = 'blue')) %>%
+  add_markers(y = ~adaptation_finance_month, marker = list(color = 'blue'), showlegend = FALSE, 
+               text = ~paste(month, ": ", adaptation_finance_month), hoverinfo = "text") %>%
+  add_lines(y = ~mitigation_finance_month, name = "Mitigación", line = list(color = 'red')) %>%
+  add_markers(y = ~mitigation_finance_month, marker = list(color = 'red'), showlegend = FALSE, 
+               text = ~paste(month, ": ", mitigation_finance_month), hoverinfo = "text") %>%
+  layout(title = "Financiamiento de Adaptación y Mitigación",
+         xaxis = list(title = "Fecha"),
+         yaxis = list(title = "Financiamiento (millones)"),
+         legend = list(x = 1, y = 0.06, xanchor = "right", yanchor = "bottom"),  # Ajustes para la leyenda
+         annotations = list(
+           list(
+             text = str_wrap("En 2023, ADB comprometió $6,168 millones para la mitigación del cambio climatico y $4,578 millones a la adaptación de los efectos adversos del cambio climático."),
+             x = 0.5,  
+             y = 1.025,  
+             xref = "paper", 
+             yref = "paper", 
+             showarrow = FALSE, 
+             font = list(size = 14, color = "grey"),
+             bgcolor = "rgba(255, 255, 255, 0.7)"
+           ),
+           list(
+             text = "Créditos: Jonnathan Campoberde  Fuente: INEC",
+             x = -0.06,  
+             y = -0.095,  
+             xref = "paper", 
+             yref = "paper", 
+             showarrow = FALSE, 
+             font = list(size = 8, color = "grey"),
+             bgcolor = "rgba(255, 255, 255, 0.7)"
+           )
+         ))
+
+grafico
+
+```
+
+**Audiencia**: La audiencia de la gráfica abarca las peronas que toman decisiones del gobierno, organizaciones no gubernamentales, investigadores, inversores en sostenibilidad, ciudadanos interesados en el cambio climático y medios de comunicación que cubren temas ambientales. Todos estos grupos buscan comprender cómo se financian las acciones para combatir el cambio climático y cómo estos recursos pueden afectar el desarrollo sostenible.
+
+**Objetivo**: El objetivo de la gráfica es mostrar de manera clara y visual la distribución mensual del financiamiento climático comprometido por la ADB en 2023, destacando las proporciones destinadas a la mitigación y adaptación al cambio climático.
+
+**Visualización**: Se utiliza ggplot junto con plotly para visualizar el grafico de lineas de manera interactiva en el día `Asian Development Bank`.
+
+**Conjunto de datos**: Los datos son obtenidos de ADB [Asian Development Bank](https://data.adb.org/dataset/climate-change-financing-adb). A partir de estos datos se agrupan los datos por meses y se suma los valores en millones de la adaptación y mitigación mostrando la relación en su proporción destinada del Asia Development Bank.
+
+## Categoria: Series de tiempo
+
+### Día 19: Dinosaurs
+
+```{r}
+df_dinosaurs <- read_csv("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_four/dinosaurs.csv")
+extraer_parte <- function(cadena) {
+  if (str_detect(cadena, "\\d")) {
+    resultado <- str_extract(cadena, "^(.*?)(?=\\s\\d)")
+  } else {
+    resultado <- cadena
+  }
+  return(resultado)
+}
+
+df_dinosaurs_extract<-df_dinosaurs %>%
+  mutate(
+    million_years = str_extract(period, "\\d+-\\d+|\\d+"),
+    period_string = sapply(period, extraer_parte),
+    min_period = sapply(million_years, function(x) {
+      limites <- as.numeric(str_split(x, "-")[[1]])
+      limites[1]
+    }),
+    max_period = sapply(million_years, function(x) {
+      limites <- as.numeric(str_split(x, "-")[[1]])
+        limites[2]
+    })
+  )
+
+df_dinosaurs_extract$length  <- as.numeric(gsub("m", "", df_dinosaurs_extract$length ))
+df_dinosaurs_extract$min_period <- as.integer(df_dinosaurs_extract$min_period)
+df_dinosaurs_extract$max_period <- as.integer(df_dinosaurs_extract$max_period)
+
+df_dinosaurs_pre<- df_dinosaurs_extract %>% 
+  filter(!is.na(min_period)) %>%
+  group_by(min_period) %>%
+  summarise(count = n()) %>%
+  rename(periodo = min_period, frecuencia = count) %>%
+  arrange(desc(periodo))
+
+grafico_lineas <- ggplot(df_dinosaurs_pre, aes(x = periodo, y = frecuencia)) +
+  geom_line(color = "blue") +
+  geom_point(aes(text = paste("Millones de años atras:", periodo, "<br>Número de especies:", frecuencia)), color = "red") +
+  labs(x = "Millones de años tras",
+       y = "Número de especies") +
+  scale_x_reverse() +  
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    plot.background = element_rect(fill = "transparent", color = NA),  
+    panel.background = element_rect(fill = "transparent")
+  )
+
+grafico_interactivo <- ggplotly(grafico_lineas,tooltip = "text")
+title <- htmltools::tags$h3("Frecuencia de Aparición de los Dinosaurios", style = "text-align: center;")
+description <- htmltools::tags$p("Análisis de la frecuencia de aparición de las especies de los dinosaurios a lo largo de la historia.",
+                                 style = "text-align: center;")
+
+caption <- htmltools::tags$footer("Créditos: Jonnathan Campoberde  Fuente: Kaggle", 
+                                   style = "text-align: left; font-size: 11px;")
+
+container <- htmltools::tags$div(
+  style = style_container,  
+  grafico_interactivo
+)
+
+browsable(tagList(title, description, container, caption))
+```
+
+**Audiencia**: Este gráfico está diseñado para un público amplio que incluye a estudiantes, educadores, investigadores y entusiastas de la paleontología. Es ideal para aquellos interesados en comprender la evolución de las especies de dinosaurios a lo largo de la historia geológica, así como la relación entre el tiempo y la diversidad biológica.
+
+**Objetivo**: El objetivo de este gráfico es visualizar y analizar la frecuencia de aparición de las especies de dinosaurios a lo largo de la historia geológica, permitiendo identificar patrones y tendencias en su diversidad a través de millones de años.
+
+**Visualización**: Se utiliza ggplot junto con plotly para visualizar el grafico de manera interactiva en el día `Dinosaurs`.
+
+**Conjunto de datos**: Los datos son obtenidos de la plataforma de competencia de ciencia de datos y una comunidad en línea para científicos de datos y profesionales del aprendizaje automático de Google [Kaggle](https://www.kaggle.com/datasets/kjanjua/jurassic-park-the-exhaustive-dinosaur-dataset). A partir de estos datos se filtran el perido de aparición y cuenta la cantidad de especies de dinosaurios que han aparecido.
+
+### Día 20: Correlation
+
+```{r, echo=FALSE, fig.cap="Precio de las Casas en Ámsterdam", fig.align='center'}
+knitr::include_url("https://datawrapper.dwcdn.net/4O2gA/1/",height = "450px")
+```
+
+**Audiencia**: La audiencia de la gráfica incluye inversores y compradores de viviendas que buscan tendencias de precios, agentes inmobiliarios que asesoran a clientes, investigadores que analizan el mercado, policymakers que diseñan políticas de vivienda, y el público general interesado en comprender el comportamiento del mercado inmobiliario en Ámsterdam.
+
+**Objetivo**: El objetivo de la gráfica es ofrecer una visualización clara de las tendencias de precios en el mercado inmobiliario, ayudando a inversores y compradores a tomar decisiones informadas. La gráfica facilita un análisis comparativo que permite identificar factores influyentes en el mercado.
+
+**Visualización**: Se utiliza la herramienta datawrapper para realizar un grafico de puntos en el día `Correlation`.
+
+**Conjunto de datos**: Los datos son obtenidos de la plataforma de competencia de ciencia de datos y una comunidad en línea para científicos de datos y profesionales del aprendizaje automático de Google [Kaggle](https://www.kaggle.com/datasets/thomasnibb/amsterdam-house-price-prediction). A partir de estos datos se usa analiza la correlación que existe entre el precio de las casas y el área de construcción.
+
+### Día 21: Green energy
+
+```{r}
+df_renewable_energy <- read_csv("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_four/Renewable energy consumption.csv")
+df_renewable_energy <- df_renewable_energy %>% clean_names(case = "snake")
+colnames(df_renewable_energy) <- gsub("x", "", colnames(df_renewable_energy))
+df_renewable<-df_renewable_energy %>%
+  filter(country_name=="World")
+
+df_renewable <- as.data.frame(t(df_renewable)) %>% slice(-1:-4)
+rownames(df_renewable)<-NULL
+
+df_renewable$Año <- seq(1990, by = 1, length.out = nrow(df_renewable))
+colnames(df_renewable)<-c("renewable_energy_consumption","year")
+df_renewable$renewable_energy_consumption <- as.numeric(df_renewable$renewable_energy_consumption)
+
+df_renewable <- na.omit(df_renewable)
+
+grafico_interactivo <- ggplot(df_renewable, aes(x = year, y = renewable_energy_consumption)) +
+  geom_line(color = "blue") +
+  geom_point(aes(text = paste("Año:", year, "<br>Consumo:", round(renewable_energy_consumption,2),"%")), color = "red") +
+  labs(x = "Año",
+       y = "Consumo de Energía Renovable (%)") +
+  theme_minimal() +  # Tema minimalista
+  scale_x_continuous(breaks = seq(min(df_renewable$year), max(df_renewable$year), by = 2)) +  # Ajustar el eje x
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+    plot.background = element_rect(fill = "transparent", color = NA),  
+    panel.background = element_rect(fill = "transparent"))
+
+grafico_interactivo <- ggplotly(grafico_interactivo,tooltip = "text")
+
+title <- htmltools::tags$h3("Consumo de Energía Renovable a lo Largo del Tiempo", style = "text-align: center;")
+description <- htmltools::tags$p("Evolución del consumo de energía renovable desde 1990, destacando las tendencias en la adopción de fuentes sostenibles y su impacto en la reducción de la dependencia de combustibles fósiles a lo largo del tiempo.",
+                                 style = "text-align: center;")
+
+caption <- htmltools::tags$footer("Créditos: Jonnathan Campoberde  Fuente: Data World Bank", 
+                                   style = "text-align: left; font-size: 11px;")
+
+container <- htmltools::tags$div(
+  style = style_container,  
+  grafico_interactivo
+)
+
+browsable(tagList(title, description, container, caption))
+
+```
+
+**Audiencia**: La audiencia de este gráfico incluye a responsables de políticas y políticos que analizan el progreso hacia objetivos de sostenibilidad, investigadores en energía renovable, profesionales del sector energético, activistas medioambientales y el público en general interesado en la evolución del consumo de energías sostenibles y su impacto en el medio ambiente.
+
+**Objetivo**: El objetivo de este gráfico es ilustrar la evolución del consumo de energía renovable a lo largo del tiempo, permitiendo identificar tendencias, patrones y cambios significativos en el uso de fuentes de energía sostenibles.
+
+**Visualización**: Se utiliza ggplot junto con plotly para visualizar el grafico de manera interactiva en el día `Green energy`.
+
+**Conjunto de datos**: Los datos son obtenidos de la base de datos del Banco Mundial, que es una fuente amplia y accesible de información económica, social y ambiental a nivel global [Data World Bank](https://data.worldbank.org/indicator/EG.FEC.RNEW.ZS). A partir de estos datos se filtra los datos a nivel mundial para luego proceder a realizar la grafica.
+
+### Día 22: Mobility
+
+```{r, echo=FALSE, fig.cap="Movilidad Usada al Ingresar a Ecuador", fig.align='center',out.width="100%", out.height="100%"}
+knitr::include_url("https://datawrapper.dwcdn.net/yJCrk/1/",height = "450px")
+```
+
+**Audiencia**: La audiencia del gráfico está compuesta por analistas de movilidad, autoridades gubernamentales, académicos, y público en general interesado en entender las tendencias y patrones de los medios de transporte utilizados por los viajeros que ingresaron a Ecuador en 2021, con el fin de apoyar la toma de decisiones informadas y la planificación de políticas de transporte y turismo.
+
+**Objetivo**: El objetivo del gráfico es visualizar y analizar los patrones de movilidad utilizados por las personas que ingresaron a Ecuador en 2021, con el fin de identificar las tendencias y comportamientos de transporte que podrían influir en las políticas de movilidad, infraestructura, y turismo del país.
+
+**Visualización**: Se utiliza la herramienta datawrapper para realizar un grafico de puntos en el día `Mobility`.
+
+**Conjunto de datos**: Los datos son obtenidos del Instituto Nacional de Estadísticas y Censos de Ecuador [INEC](https://aplicaciones3.ecuadorencifras.gob.ec/BIINEC-war/index.xhtml), la misma que es la institución rectora de la estadística nacional de Ecuador. A partir de estos datos se filtran los datos y se cuenta por día el medio de transporte usado para ingresar al Ecuador en el año 2021.
+
+### Día 23: Tiles
+
+```{r}
+df_salidas_internacionales <- read_csv("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_four/salidas_internacionales.csv")
+df_salidas_internacionales$mes_movi <- factor(df_salidas_internacionales$mes_movi, levels = c(
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+))
+
+
+ggplot(df_salidas_internacionales, aes(x = mes_movi, y = factor(anio_movi), fill = cantidad)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "#003366", mid = "#A9A9A9", high = "#D32F2F", midpoint = median(df_salidas_internacionales$cantidad))+
+  theme_minimal() +
+  labs(
+    title = "Salidas Internacionales en Ecuador",
+    subtitle = str_wrap("Transformación de las salidas internacionales desde Ecuador (2019-2021), un análisis del impacto de la pandemia de COVID-19, que impuso severas restricciones y alteró radicalmente los patrones de movilidad global.", width = 90),
+    x = "Mes",
+    y = "Año",
+    fill = "Valor",
+    caption = "Créditos: Jonnathan Campoberde  Fuente: INEC"
+  ) +
+  theme(
+    panel.grid = element_blank(),
+    axis.title.x = element_text(size = 10),
+    axis.title.y = element_text(size = 10),
+    axis.text.x = element_text(size = 8),
+    axis.text.y = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),   # Centra el título
+    plot.subtitle = element_text(hjust = 0.5, size = 12),                # Centra el subtítulo
+    plot.caption = element_text(hjust = -0.01, size = 8)                     # Alinea el caption a la izquierda
+  )
+
+```
+
+**Audiencia**: La audiencia de la gráfica sobre las salidas internacionales de Ecuador (2019-2021) abarca investigadores, responsables de políticas, profesionales del turismo y el público general interesado en el impacto de la pandemia de COVID-19 en la movilidad. Este análisis visual ofrece insights sobre las tendencias de viaje y puede servir como herramienta para decisiones estratégicas en el sector turístico y la planificación de políticas de recuperación.
+
+**Objetivo**:El objetivo de la gráfica es analizar el impacto de la pandemia de COVID-19 en las salidas internacionales de Ecuador entre 2019 y 2021, facilitando la comprensión de las tendencias de viaje y brindando información para la toma de decisiones en el sector turístico y la formulación de políticas de recuperación.
+
+**Visualización**: Se utiliza ggplot para visualizar el grafico en el día `Tiles`.
+
+**Conjunto de datos**: Los datos son obtenidos del Instituto Nacional de Estadísticas y Censos de Ecuador [INEC](https://aplicaciones3.ecuadorencifras.gob.ec/BIINEC-war/index.xhtml), la misma que es la institución rectora de la estadística nacional de Ecuador. A partir de estos datos se filtran los datos por mes y año para contar la frecuencua de salidas que se han registrado en el Ecuador en el auge de la panademia de COVID-19.
+
+### Día 24: ILO Region for Africa
+
+```{r}
+df_unemployment <- read_csv("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_four/UNE_2EAP_SEX_AGE_RT_A-filtered-2024-11-04.csv")
+df_unemployment <- df_unemployment %>% 
+  clean_names(case = "snake") %>% 
+  filter(classif1_label=="Age (Youth, adults): 15-24")
+
+top_countries_year <- df_unemployment %>%
+  group_by(time) %>%
+  top_n(1, obs_value) %>%
+  ungroup()
+
+
+p_natural_unemployment <- ggplot(top_countries_year, aes(x = time, y = obs_value, fill = ref_area_label)) +
+  geom_bar(aes(text = paste("Año:", time, "<br>Tasa de desempleo:", round(obs_value,2),"%")),stat = "identity") +
+  scale_fill_brewer(palette = "Reds") + 
+  labs(x = "Año",
+    y = "Porcentaje de desempleo (%)",
+    fill = "País") +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 18, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12),
+    plot.subtitle = element_text(size = 12, hjust = 0.5, color = "#34495E"),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    plot.caption = element_text(hjust = 0, size = 12),
+  )  +
+  scale_x_continuous(breaks = seq(min(top_countries_year$time), max(top_countries_year$time), by = 2))
+
+
+
+p_interactive_unemployment <- ggplotly(p_natural_unemployment,tooltip = "text") %>%
+  layout(
+    autosize = TRUE,
+    xaxis = list(title = "Año"),
+    yaxis = list(title = "Porcentaje de desempleo"),
+    showlegend = TRUE
+  )
+
+
+title <- htmltools::tags$h3("Tasa de Desempleo en Adolescentes y Jovenes en America", 
+                             style = "text-align: center;")
+description <- htmltools::tags$p("Análisis del paises con las tasas de desempleo años más altas registradas en edades de 15-24 en los últimos años.",style = "text-align: center; font-size: 14px;")
+
+caption <- htmltools::tags$footer("Créditos: Jonnathan Campoberde  Fuente: International Labour Organization", 
+                                   style = "text-align: left; font-size: 10px;")
+
+style_container <- "border: none; padding: 0; margin: 0;"
+
+container_disasters <- htmltools::tags$div(
+  style = style_container,  
+  p_interactive_unemployment
+)
+
+browsable(tagList(title, description, container_disasters, caption))
+```
+
+**Audiencia**: La audiencia de la gráfica incluye investigadores, economistas y responsables de políticas públicas interesados en las tendencias de desempleo en América, con el objetivo de analizar sus implicaciones económicas y evaluar el impacto de las políticas laborales en la región.
+
+**Objetivo**:El objetivo de la gráfica es ilustrar las tasas de desempleo en los países del continente americano en los últimos años, permitiendo una comparación clara entre ellos. Esta visualización busca resaltar las disparidades en el desempleo, facilitando la identificación de tendencias y patrones que pueden informar decisiones de políticas públicas y estrategias económicas en la región.
+
+**Visualización**: Se utiliza ggplot junto con plotly para visualizar el grafico interactiv en el día `ILO Region for Africa`.
+
+**Conjunto de datos**: Los datos son obtenidos de la Organización Internacional del Trabajo (OIT) es una agencia especializada de las Naciones Unidas [OIT](https://rshiny.ilo.org/dataexplorer9/?lang=en&segment=indicator&id=UNE_2EAP_SEX_AGE_RT_A), la misma que se ocupa de promover derechos laborales, fomentar oportunidades de empleo digno y asegurar condiciones de trabajo justas. A partir de estos datos se filtran los datos por los rangos de edad entre 15-24 años encontrando el pais con la mayor porcentaje de tasa de desemempleo en el continente americano.
+
+## Categoria: Incertidumbres
+
+### Día 25: Global Change
+
+```{r}
+df_sea_level <- read_csv("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_five/sea_levels_2015.csv")
+df_sea_level <- df_sea_level %>% 
+  clean_names(case = "snake")
+
+mean_by_decade <- df_sea_level %>%
+  mutate(Year = as.numeric(format(time, "%Y")), 
+         Decade = floor(Year / 10) * 10) %>%    
+  group_by(Decade) %>%                         
+  summarise(
+    mean_GMSL = mean(gmsl, na.rm = TRUE),                  
+    mean_GMSL_uncertainty = mean(gmsl_uncertainty, na.rm = TRUE)  
+  )
+
+
+
+mean_long <- mean_by_decade %>%
+  pivot_longer(cols = c(mean_GMSL, mean_GMSL_uncertainty), 
+               names_to = "Metric", 
+               values_to = "Value") %>%
+  mutate(Metric = recode(Metric,
+                         mean_GMSL = str_wrap("GMSL", 10),
+                         mean_GMSL_uncertainty = str_wrap("Incertidumbre de GMSL", 10)))
+
+ggplot_graph <- ggplot(mean_long, aes(x = Decade, y = Value, color = Metric, text = paste("Década:", Decade, "<br>Valor Medio:", round(Value, 2)))) +
+  geom_line(size = 4,color = "blue") +  
+  geom_point(size = 2) +  
+  labs(x = "Década",
+       y = "Valor Medio",
+       color = "Métrica") +
+  theme_minimal() +  
+  theme(
+    plot.title = element_text(hjust = 0.5),  
+    legend.position = "bottom"  
+  ) +
+  scale_x_continuous(breaks = seq(min(mean_long$Decade), 2010, by = 10))  # Ajustar el eje x
+
+interactive_graph <- ggplotly(ggplot_graph, tooltip = "text")
+
+title <- htmltools::tags$h3("Comparación de GMSL y la incertidumbre de GMSL por Década", 
+                             style = "text-align: center;")
+
+description <- htmltools::tags$p("Evolución del Nivel Medio del Mar Global (GMSL) y su incertidumbre a lo largo de las décadas, destacando tendencias y variaciones desde 1880 hasta 2010.", 
+                                  style = "text-align: center; font-size: 14px;")
+
+caption <- htmltools::tags$footer("Créditos: Jonnathan Campoberde  Fuente: International Labour Organization", 
+                                   style = "text-align: left; font-size: 10px;")
+
+style_container <- "border: none; padding: 0; margin: 0"
+
+container_graph <- htmltools::tags$div(
+  style = style_container,  
+  interactive_graph
+)
+
+browsable(tagList(title, description, container_graph, caption))
+```
+
+**Audiencia**: La audiencia del gráfico incluye a investigadores y académicos en ciencias ambientales, policymakers que toman decisiones sobre políticas climáticas, estudiantes y educadores que buscan aprender sobre el cambio climático, ONG que abogan por la sostenibilidad y al público en general interesado en el medio ambiente. Este gráfico proporciona información clave sobre la evolución del nivel del mar y su incertidumbre, facilitando la comprensión de los desafíos que enfrenta nuestro planeta.
+
+**Objetivo**: El objetivo del gráfico es visualizar la evolución del Nivel Medio del Mar Global (GMSL) y su incertidumbre desde 1880 hasta 2010, destacando tendencias y variaciones que informan sobre los cambios climáticos y su impacto en el nivel del mar.
+
+**Visualización**: Se utiliza ggplot junto con plotly para visualizar el grafico interactiv en el día `Global Change`.
+
+**Conjunto de datos**: Los datos son obtenidos de la plataforma de competencia de ciencia de datos y una comunidad en línea para científicos de datos y profesionales del aprendizaje automático de Google [Kaggle](https://www.kaggle.com/datasets/somesh24/sea-level-change). A partir de estos datos se agrupan por decadas para obtner el valor medio del nivel medio del mar asi como su incertidumbre.
+
+### Día 27: Good/Bad
+
+```{r}
+df_ramen <- read_csv("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_five/ramen-ratings.csv")
+df_ramen <- df_ramen %>% 
+  clean_names(case = "snake")
+paises_asiaticos <- c("Japan", "China", "South Korea", "Thailand", "Vietnam", 
+                      "Malaysia", "Singapore", "Indonesia", "India", "Philippines")
+
+df_ramen <- df_ramen %>%
+  drop_na(stars)
+
+df_ramen$stars <- as.numeric(df_ramen$stars)
+
+df_ramen_asia <- df_ramen %>%
+  filter(country %in% paises_asiaticos)
+
+ggplot(df_ramen_asia, aes(x = country, y = stars)) +
+  geom_violin(fill = "lightblue", color = "black") +
+  labs(
+    title = "Calificaciones de Ramen en Asia",
+    subtitle = str_wrap("Explorando las calificaciones de Ramen, destacando cómo varían los gustos y las valoraciones según el país de origen y estilo de preparación."),
+    caption = "Créditos: Jonnathan Campoberde  Fuente: Kaggle",
+    x = "País",
+    y = "Promedio de Estrellas"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 18, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12, angle=30 ),
+    plot.subtitle = element_text(size = 12, hjust = 0.5, color = "#34495E"),
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    plot.caption = element_text(hjust = -0.02, size = 8)
+  )
+```
+
+**Audiencia**: La audiencia para este gráfico incluye amantes de la gastronomía, turistas interesados en explorar la comida asiática, críticos y entusiastas culinarios que comparan estilos de ramen, empresarios del sector alimenticio buscando adaptar sus ofertas, así como estudiantes e investigadores interesados en las diferencias culturales y preferencias de los consumidores.
+
+**Objetivo**: El objetivo de este gráfico es proporcionar una visión comparativa de las calificaciones de ramen de diferentes países asiáticos, destacando las preferencias de los consumidores en relación con la calidad del sabor, la presentación y la experiencia general de este popular platillo.
+
+**Visualización**: Se utiliza ggplot para visualizar el grafico de manera interactiva en el día `Good/Bad`.
+
+**Conjunto de datos**: Los datos son obtenidos de la plataforma de competencia de ciencia de datos y una comunidad en línea para científicos de datos y profesionales del aprendizaje automático de Google [Kaggle](https://www.kaggle.com/datasets/residentmario/ramen-ratings). A partir de estos datos se filtran solo los paises asiaticos para obtener el promedio de las calificaciones por pais.
+
+### Día 28: Trend
+
+```{r}
+df_trend <- read.csv("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_five/multi_timeline.csv", sep = ",", skip = 1)
+df_trend <- df_trend %>% 
+  clean_names(case = "snake")
+df_trend$semana <- as.Date(df_trend$semana) 
+df_trend$apagon_electrico_ecuador <- as.numeric(df_trend$apagon_electrico_ecuador)
+df_trend$apagon_electrico_ecuador[is.na(df_trend$apagon_electrico_ecuador)] <- 0
+
+
+ggplot(df_trend, aes(x = semana, y = apagon_electrico_ecuador)) +
+  geom_point(color = "#FF5733", size = 2, alpha = 0.7) +  # Puntos resaltados
+  geom_smooth(method = "loess", color = "#1F77B4", se = FALSE) +  # Línea de suavización
+  labs(
+    title = "Busquedas de Apagones Eléctricos en Ecuador",
+    subtitle = str_wrap("Evolución de la popularidad de las búsquedas sobre apagones eléctricos en Ecuador durante los últimos 12 meses, mostrando las fluctuaciones en el interés a lo largo del tiempo.",100),
+    x = "Fecha",
+    y = "Índice de Popularidad",
+    caption = "Créditos: Jonnathan Campoberde  Fuente: Google Trends"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 18, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12, color = "#555555"),
+    axis.title = element_text(size = 13),
+    axis.text = element_text(size = 11),
+    panel.grid.major = element_line(color = "gray85"),
+    panel.grid.minor = element_blank(),
+    plot.caption = element_text(hjust = -0.05, size = 9, color = "gray50")
+  )
+```
+
+**Audiencia**: La audiencia de esta gráfica incluye analistas de datos, investigadores en energía, responsables de políticas públicas y ciudadanos interesados en las fluctuaciones de los apagones eléctricos en Ecuador. Es útil para identificar patrones de búsqueda y para empresas del sector energético, periodistas y decisores gubernamentales que gestionan eventos de apagones.
+
+**Objetivo**: El objetivo de la gráfica es visualizar la evolución de la popularidad de las búsquedas relacionadas con los apagones eléctricos en Ecuador durante los últimos 12 meses. Esto permite identificar tendencias, picos de interés y patrones en el comportamiento de la población frente a estos eventos.
+
+**Visualización**: Se utiliza ggplot para visualizar el grafico de manera interactiva en el día `Trend`.
+
+**Conjunto de datos**: Los datos son obtenidos de Google Trends es una herramienta gratuita proporcionada por Google que permite analizar la popularidad de términos de búsqueda en la web a lo largo del tiempo [Google Trends](https://trends.google.com/trends/explore?geo=EC&q=%2Fm%2F01rbhn&hl=es-419). A partir de estos datos se visualiza se visualiza la linea de tendencia frente a las busquedas que tengan que ver al apagon energetico.
+
+### Día 29: Black'n'white
+
+```{r, echo=FALSE, fig.cap="Salario Mínimo Interprofesional en Ecuador", fig.align='center',out.width="100%", out.height="100%"}
+knitr::include_url("https://datawrapper.dwcdn.net/yflwP/3/",height = "600px")
+```
+
+**Audiencia**: La audiencia de este gráfico incluye analistas económicos, responsables de políticas públicas y ciudadanos interesados en la evolución del salario mínimo en Ecuador, así como su impacto en el poder adquisitivo y la economía local.
+
+**Objetivo**: El objetivo de este gráfico es mostrar la evolución del salario mínimo interprofesional en Ecuador en términos de la moneda local, comparando su crecimiento en los últimos años y proporcionando un análisis claro sobre cómo ha variado este indicador económico en el tiempo.
+
+**Visualización**: Se utiliza la herramienta datawrapper para realizar un grafico de rangos en el día `Black'n'white`.
+
+**Conjunto de datos**: Los datos son obtenidos de la plataforma Datosmacro, la cual es una plataforma web que ofrece información económica y financiera sobre diversos países del mundo [Datosmacro](https://datosmacro.expansion.com/smi/ecuador). A partir de estos datos, se convierten a la moneda local ecuatoriana en dólares para realizar el grafico comparativo de rango.
+
+### Día 30: FiveThirtyEight
+
+```{r}
+df_electrical <- read.csv("C:/Users/jonat/Desktop/maestria/visualizacion_datos/challengue/data/week_five/electrical_data.csv", sep = ",")
+df_electrical <- df_electrical %>% 
+  clean_names(case = "snake") %>%
+  filter(sector_name=="all sectors") %>%
+  group_by(year, month) %>%
+  summarise(avg_price = mean(price, na.rm = TRUE)) %>%
+  mutate(fecha = as.Date(paste(year, month, "01", sep = "-"), format = "%Y-%m-%d")) 
+
+df_electrical$fecha <- as.Date(df_electrical$fecha)
+
+ggplot(df_electrical, aes(x = fecha, y = avg_price)) +
+  geom_line(color = "blue", size = 1) + 
+  geom_ribbon(aes(ymin = avg_price - sd(avg_price), ymax = avg_price + sd(avg_price)), 
+              fill = "lightblue", alpha = 0.3) +  
+  labs(
+    title = "Tendencia de Precio Promedio en Estados Unidos",
+    subtitle = str_wrap("Evolución reciente del precio promedio, mostrando las variaciones más significativas y tendencias clave en Estados Unidos en los últimos años.",100),
+    caption = "Créditos: Jonnathan Campoberde  Fuente: Kaggle",
+    x = "Fecha",
+    y = "Precio Promedio (centavos)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 18, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12, color = "#555555"),
+    axis.title = element_text(size = 13),
+    axis.text = element_text(size = 11),
+    panel.grid.major = element_line(color = "gray85"),
+    panel.grid.minor = element_blank(),
+    plot.caption = element_text(hjust = -0.05, size = 9, color = "gray50")
+  )
+```
+
+**Audiencia**: La audiencia de esta gráfica son economistas, analistas de mercado, y personas interesadas en comprender las fluctuaciones del precio promedio en Estados Unidos. También está dirigida a inversores y responsables de la toma de decisiones económicas que desean identificar patrones de precio y anticipar posibles impactos en el mercado financiero.
+
+**Objetivo**: El objetivo de la gráfica es mostrar de manera clara y comprensible cómo ha cambiado el precio promedio en Estados Unidos a lo largo del tiempo, resaltando las tendencias generales y permitiendo observar posibles periodos de volatilidad o estabilidad.
+
+**Visualización**: Se utiliza ggplot para visualizar el grafico de manera interactiva en el día `FiveThirtyEight`.
+
+**Conjunto de datos**: Los datos son obtenidos de la plataforma de competencia de ciencia de datos y una comunidad en línea para científicos de datos y profesionales del aprendizaje automático de Google [Kaggle](https://www.kaggle.com/datasets/alistairking/electricity-prices). A partir de estos datos se filtran todos los sectores para obtener la media del precio del promedio de la electricidad por mes de todos los estados de Estados Unidos.
